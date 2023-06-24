@@ -1,33 +1,28 @@
 import os
 import json
-from azure.identity import DefaultAzureCredential
-from azure.mgmt.compute import ComputeManagementClient
+from azure_metadata import AzureMetadata
+#from azure.identity import DefaultAzureCredential
+#from azure.mgmt.compute import ComputeManagementClient
 
 
 
 managed_identity_id = os.environ.get('MANAGED_IDENTITY_ID')
 
 
+def get_metadata_value(key):
+    metadata = AzureMetadata().compute
+    if key in metadata:
+        return metadata[key]
+    else:
+        return None
 
-def get_azure_instance_metadata(key=None):
-    metadata = {}
+# Example usage
+data_key = "vmId"
+value = get_metadata_value(data_key)
 
-    # Retrieve the instance metadata
-    try:
-        credential = DefaultAzureCredential()
-        client = ComputeManagementClient(credential, subscription_id='<Your Azure Subscription ID>')
-        vm = client.virtual_machines.get('<Your Resource Group Name>', '<Your VM Name>')
-        metadata = vm.__dict__['_attribute_map']
-    except Exception as e:
-        print(f"Error retrieving Azure instance metadata: {str(e)}")
+if value is not None:
+    json_output = json.dumps({data_key: value})
+    print(json_output)
+else:
+    print(f"Metadata key '{data_key}' not found.")
 
-    # Filter the metadata based on the provided key
-    if key is not None:
-        metadata = {key: metadata.get(key)}
-
-    # Return the JSON-formatted output
-    return json.dumps(metadata, indent=4)
-
-# Example usage:
-azure_metadata = get_azure_instance_metadata()
-print(azure_metadata)

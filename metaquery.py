@@ -1,6 +1,13 @@
+import os
 import json
 from azure.identity import DefaultAzureCredential
 from azure.mgmt.compute import ComputeManagementClient
+
+
+
+managed_identity_id = os.environ.get('MANAGED_IDENTITY_ID')
+
+
 
 def get_azure_instance_metadata(key=None):
     metadata = {}
